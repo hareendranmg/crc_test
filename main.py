@@ -157,14 +157,19 @@ class MyWidget(QWidget):
 
     def send_to_com_port(self):
         # Implement your send to COM port logic here
+        crc = self.crc_field.text()
+        # hex_values = [int(crc[i : i + 2], 16) for i in range(0, len(crc), 2)]
+        hex_values = [int(crc[i : i + 2], 16) for i in range(0, len(crc), 2)]
+
+        print(hex_values)
         if self.ser is not None:
-            crc = self.crc_field.text()
-            print(f"Sending CRC: {crc} to COM Port")
-            self.ser.write(crc.encode())
+            # print(f"Sending CRC: {crc} to COM Port")
+            self.ser.write(bytes(hex_values))
+            # self.ser.write(crc.encode())
             time.sleep(1)
             response = self.ser.read_all()
             print(f"response=> {response}")
-            self.crc_response_field.setText(response.decode())
+            # self.crc_response_field.setText(response.decode())
 
         else:
             msg_box = QMessageBox()
