@@ -162,15 +162,20 @@ class MyWidget(QWidget):
 
         speed = format(int(speed), "02x")
         direction = format(int(direction), "02x")
-        number_step = format(int(number_step), "02x")
+        number_step = int(number_step)  # Convert to integer
+        hex_value = hex(number_step)[2:]
+        hex_padded = hex_value.zfill(6)
+        number_step = " ".join(
+            [hex_padded[i : i + 2] for i in range(0, len(hex_padded), 2)]
+        )
+
         print(
             f"Speed: {speed}, movemnent type: {direction}, Number of steps: {number_step}"
         )
 
-        str_to_send_str = (
-            f"02 10 00 25 00 05 0A 02 {direction} 00 00 00 {speed} 00 00 BB 80".replace(
-                " ", ""
-            )
+        str_to_send_str = f"02 10 00 25 00 05 0A 02 {direction} 00 00 00 {speed} 00 {number_step}".replace(
+            " ",
+            "",
         )
         str_to_send = bytes.fromhex(str(str_to_send_str))
         response = self.modbusCrc(str_to_send)
