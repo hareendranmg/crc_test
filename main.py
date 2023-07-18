@@ -85,8 +85,40 @@ class MyWidget(QWidget):
         self.crc_field.setObjectName("crc_field")
         crc_layout.addWidget(self.crc_field)
         send_button = QPushButton("Send to COM Port")
-        send_button.clicked.connect(self.send_to_com_port)
+        send_button.clicked.connect(self.send_crc)
         crc_layout.addWidget(send_button)
+        main_layout.addLayout(crc_layout)
+
+        crc_layout = QHBoxLayout()
+
+        connect_button = QPushButton("Connect")
+        connect_button.clicked.connect(self.connect)
+        crc_layout.addWidget(connect_button)
+
+        ms1_button = QPushButton("MS1")
+        ms1_button.clicked.connect(self.set_ms1)
+        crc_layout.addWidget(ms1_button)
+
+        ms1_2_button = QPushButton("MS1/2")
+        ms1_2_button.clicked.connect(self.set_ms1_2)
+        crc_layout.addWidget(ms1_2_button)
+
+        ms1_4_button = QPushButton("MS1/4")
+        ms1_4_button.clicked.connect(self.set_ms1_4)
+        crc_layout.addWidget(ms1_4_button)
+
+        ms1_8_button = QPushButton("MS1/8")
+        ms1_8_button.clicked.connect(self.set_ms1_8)
+        crc_layout.addWidget(ms1_8_button)
+
+        ms1_16_button = QPushButton("MS1/16")
+        ms1_16_button.clicked.connect(self.set_ms1_16)
+        crc_layout.addWidget(ms1_16_button)
+
+        disconnect_button = QPushButton("Stop")
+        disconnect_button.clicked.connect(self.stop_motor)
+        crc_layout.addWidget(disconnect_button)
+
         main_layout.addLayout(crc_layout)
 
         crc_response_layout = QHBoxLayout()
@@ -128,9 +160,6 @@ class MyWidget(QWidget):
             self.sender().parent().findChild(QLineEdit, "number_step_input").text()
         )
 
-        # speed = str(hex(int(speed))[2:])
-        # direction = str(hex(int(direction))[2:])
-        # number_step = str(hex(int(number_step))[2:])
         speed = format(int(speed), "02x")
         direction = format(int(direction), "02x")
         number_step = format(int(number_step), "02x")
@@ -153,23 +182,23 @@ class MyWidget(QWidget):
 
         print(final_crc)
         return
-        # Perform CRC calculation and update the self.crc_field with the calculated value
 
-    def send_to_com_port(self):
-        # Implement your send to COM port logic here
-        crc = self.crc_field.text()
-        # hex_values = [int(crc[i : i + 2], 16) for i in range(0, len(crc), 2)]
-        hex_values = [int(crc[i : i + 2], 16) for i in range(0, len(crc), 2)]
+    def get_hex_array(self, data):
+        hex_values = [int(data[i : i + 2], 16) for i in range(0, len(data), 2)]
+        return hex_values
 
+    def send_crc(self):
+        hex_values = self.get_hex_array(self.crc_field.text())
         print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def send_to_comport(self, data):
         if self.ser is not None:
-            # print(f"Sending CRC: {crc} to COM Port")
-            self.ser.write(bytes(hex_values))
-            # self.ser.write(crc.encode())
+            self.ser.write(data)
             time.sleep(1)
             response = self.ser.read_all()
             print(f"response=> {response}")
-            # self.crc_response_field.setText(response.decode())
+            self.crc_response_field.setText(str(response))
 
         else:
             msg_box = QMessageBox()
@@ -190,6 +219,41 @@ class MyWidget(QWidget):
                 else:
                     crc >>= 1
         return crc
+
+    def connect(self):
+        hex_values = self.get_hex_array("02 06 00 00 00 01 48 39".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def set_ms1(self):
+        hex_values = self.get_hex_array("02 06 00 1A 00 01 69 FE".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def set_ms1_2(self):
+        hex_values = self.get_hex_array("02 06 00 1A 00 02 29 FF".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def set_ms1_4(self):
+        hex_values = self.get_hex_array("02 06 00 1A 00 04 A9 FD".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def set_ms1_8(self):
+        hex_values = self.get_hex_array("02 06 00 1A 00 08 A9 F8".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def set_ms1_16(self):
+        hex_values = self.get_hex_array("02 06 00 1A 00 10 A9 F2".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
+
+    def stop_motor(self):
+        hex_values = self.get_hex_array("02 06 00 25 00 06 18 30".replace(" ", ""))
+        print(hex_values)
+        self.send_to_comport(bytes(hex_values))
 
 
 if __name__ == "__main__":
