@@ -38,6 +38,7 @@ class MyWidget(QWidget):
         ports = list(serial.tools.list_ports.comports())
         for port in ports:
             com_dropdown.addItem(port.device)
+            print(f"{port.device}: {port.description}")
             if "USB Serial Port" in port.description:
                 index = com_dropdown.findText(port.device)
                 if index != -1:
